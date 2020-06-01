@@ -1,0 +1,10 @@
+{
+  "name": "comicbooks",
+  "version": "1.0.0",
+  "description": "graphQL API with react frontend",
+  "main": "server.js",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
