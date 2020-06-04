@@ -2,7 +2,14 @@ const graphql = require("graphql");
 const _ = require("lodash");
 const Comic = require("../models/comics");
 const Hero = require("../models/hero");
-const { GraphQLObjectType, GraphQLString, GraphQLSchema, GraphQLID, GraphQLList } = graphql;
+const {
+  GraphQLObjectType,
+  GraphQLString,
+  GraphQLSchema,
+  GraphQLID,
+  GraphQLList,
+  GraphQLNonNull,
+} = graphql;
 
 const ComicBookType = new GraphQLObjectType({
   name: "Comic",
@@ -14,6 +21,7 @@ const ComicBookType = new GraphQLObjectType({
       type: HeroType,
       resolve(parent, args) {
         // return _.find(heroes, { id: parent.heroId });
+        return Hero.findById(parent.heroId);
       },
     },
   }),
@@ -29,6 +37,7 @@ const HeroType = new GraphQLObjectType({
       type: new GraphQLList(ComicBookType),
       resolve(parent, args) {
         // return _.filter(comics, { heroId: parent.id });
+        return Comic.find({ heroId: parent.id });
       },
     },
   }),
@@ -43,6 +52,7 @@ const RootQuery = new GraphQLObjectType({
       resolve(parent, args) {
         // code to get data from db
         // return _.find(comics, { id: args.id });
+        return Comic.findById(args.id);
       },
     },
     hero: {
@@ -50,18 +60,21 @@ const RootQuery = new GraphQLObjectType({
       args: { id: { type: GraphQLID } },
       resolve(parent, args) {
         // return _.find(heroes, { id: args.id });
+        return Hero.findById(args.id);
       },
     },
     comicbooks: {
       type: new GraphQLList(ComicBookType),
       resolve(parent, args) {
         // return comics;
+        return Comic.find();
       },
     },
     heroes: {
       type: new GraphQLList(HeroType),
       resolve(parent, args) {
         // return heroes;
+        return Hero.find();
       },
     },
   },
@@ -73,8 +86,8 @@ const Mutation = new GraphQLObjectType({
     addHero: {
       type: HeroType,
       args: {
-        name: { type: GraphQLString },
-        skills: { type: GraphQLString },
+        name: { type: new GraphQLNonNull(GraphQLString) },
+        skills: { type: new GraphQLNonNull(GraphQLString) },
       },
       resolve(parent, args) {
         let hero = new Hero({
@@ -87,9 +100,9 @@ const Mutation = new GraphQLObjectType({
     addComic: {
       type: ComicBookType,
       args: {
-        name: { type: GraphQLString },
-        publisher: { type: GraphQLString },
-        heroId: { type: GraphQLID },
+        name: { type: new GraphQLNonNull(GraphQLString) },
+        publisher: { type: new GraphQLNonNull(GraphQLString) },
+        heroId: { type: new GraphQLNonNull(GraphQLID) },
       },
       resolve(parent, args) {
         let comic = new Comic({
