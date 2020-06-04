@@ -1,22 +1,8 @@
 const graphql = require("graphql");
 const _ = require("lodash");
+const Comic = require("../models/comics");
+const Hero = require("../models/hero");
 const { GraphQLObjectType, GraphQLString, GraphQLSchema, GraphQLID, GraphQLList } = graphql;
-
-// dummy data
-var comics = [
-  { name: "Spider-man", publisher: "Marvel", id: "1", heroId: "2" },
-  { name: "Superman", publisher: "DC", id: "2", heroId: "1" },
-  { name: "Avengers", publisher: "Marvel", id: "3", heroId: "3" },
-  { name: "Venom", publisher: "Marvel", id: "4", heroId: "2" },
-  { name: "Justice League", publisher: "DC", id: "5", heroId: "1" },
-  { name: "Dark World", publisher: "Marvel", id: "6", heroId: "3" },
-];
-
-var heroes = [
-  { name: "Superman", skills: "Kryptonian", id: "1" },
-  { name: "Spiderman", skills: "Spider Strength", id: "2" },
-  { name: "Thor", skills: "Control Lightning", id: "3" },
-];
 
 const ComicBookType = new GraphQLObjectType({
   name: "Comic",
@@ -27,7 +13,7 @@ const ComicBookType = new GraphQLObjectType({
     hero: {
       type: HeroType,
       resolve(parent, args) {
-        return _.find(heroes, { id: parent.heroId });
+        // return _.find(heroes, { id: parent.heroId });
       },
     },
   }),
@@ -42,7 +28,7 @@ const HeroType = new GraphQLObjectType({
     comic: {
       type: new GraphQLList(ComicBookType),
       resolve(parent, args) {
-        return _.filter(comics, { heroId: parent.id });
+        // return _.filter(comics, { heroId: parent.id });
       },
     },
   }),
@@ -56,26 +42,62 @@ const RootQuery = new GraphQLObjectType({
       args: { id: { type: GraphQLID } },
       resolve(parent, args) {
         // code to get data from db
-        return _.find(comics, { id: args.id });
+        // return _.find(comics, { id: args.id });
       },
     },
     hero: {
       type: HeroType,
       args: { id: { type: GraphQLID } },
       resolve(parent, args) {
-        return _.find(heroes, { id: args.id });
+        // return _.find(heroes, { id: args.id });
       },
     },
     comicbooks: {
       type: new GraphQLList(ComicBookType),
       resolve(parent, args) {
-        return comics;
+        // return comics;
       },
     },
     heroes: {
       type: new GraphQLList(HeroType),
       resolve(parent, args) {
-        return heroes;
+        // return heroes;
+      },
+    },
+  },
+});
+
+const Mutation = new GraphQLObjectType({
+  name: "Mutation",
+  fields: {
+    addHero: {
+      type: HeroType,
+      args: {
+        name: { type: GraphQLString },
+        skills: { type: GraphQLString },
+      },
+      resolve(parent, args) {
+        let hero = new Hero({
+          name: args.name,
+          skills: args.skills,
+        });
+        return hero.save();
+      },
+    },
+    addComic: {
+      type: ComicBookType,
+      args: {
+        name: { type: GraphQLString },
+        publisher: { type: GraphQLString },
+        heroId: { type: GraphQLID },
+      },
+      resolve(parent, args) {
+        let comic = new Comic({
+          name: args.name,
+          publisher: args.publisher,
+          heroId: args.heroId,
+        });
+        return comic.save();
       },
     },
   },
@@ -83,4 +105,5 @@ const RootQuery = new GraphQLObjectType({
 
 module.exports = new GraphQLSchema({
   query: RootQuery,
+  mutation: Mutation,
 });
